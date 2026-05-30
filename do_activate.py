@@ -378,6 +378,31 @@ async def register_do(page, email_addr, link=None):
         await page.goto(target_url, wait_until='domcontentloaded', timeout=45000)
         await page.wait_for_timeout(3000)
 
+        # If on login page, click "Sign Up" to get to registration form
+        current_url = page.url
+        page_text = (await page.inner_text('body')).lower()
+        if '/login' in current_url or ('log in' in page_text and 'sign up' in page_text):
+            log("On login page, clicking Sign Up...", "🔗")
+            signup_link = await page.query_selector('a:has-text("Sign Up"), a:has-text("sign up"), a[href*="register"], a[href*="signup"]')
+            if signup_link:
+                await signup_link.click()
+                await page.wait_for_timeout(3000)
+            else:
+                # Try direct navigation to registration
+                await page.goto(REGISTER_URL, wait_until='domcontentloaded', timeout=30000)
+                await page.wait_for_timeout(3000)
+
+        # Check for waves signup flow (checkbox + "Sign Up with Email")
+        checkbox = await page.query_selector('#agreeRegistration-agreeRegistration')
+        if checkbox:
+            log("Waves signup flow detected, checking Terms...", "☑️")
+            await checkbox.click()
+            await page.wait_for_timeout(1000)
+            email_btn = await page.query_selector('button:has-text("Sign Up with Email")')
+            if email_btn:
+                await email_btn.click()
+                await page.wait_for_timeout(3000)
+
         # Fill form directly (name, email, password)
         name_input = await page.query_selector('#name')
         email_input = await page.query_selector('#email')
