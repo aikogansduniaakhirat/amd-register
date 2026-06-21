@@ -148,26 +148,150 @@ COUNTRY_LABELS = {
     "BR": "Brazil", "MX": "Mexico", "CA": "Canada",
 }
 
+# Use cases are intentionally varied — different domains, tones, lengths,
+# specific tool/framework mentions, regional context, casual vs formal.
+# Avoid AI/ML-only entries; mix HPC, scientific computing, game dev,
+# audio, robotics, indie/side projects, students, production engineering.
 USE_CASES = [
-    "I am building an AI-powered medical imaging diagnostic tool. We need GPU compute to train and serve our models.",
-    "Working on large language model fine-tuning for low-resource languages. Need AMD GPU access to evaluate ROCm compatibility.",
-    "Developing open-source computer vision framework for autonomous navigation. Testing inference performance on AMD hardware.",
-    "Building a real-time speech-to-text system for accessibility. Need GPU cloud for model serving and benchmarking.",
-    "Research on diffusion models for scientific simulation. Evaluating AMD GPU performance for our training pipeline.",
-    "Creating an AI-powered code review tool. Need GPU compute for running inference on large code models.",
-    "Working on multimodal AI research. Testing AMD ROCm support for our custom kernels.",
-    "Building a recommendation engine. Need GPU cloud for training and A/B testing different architectures.",
-    "Developing NLP tools for sentiment analysis. Evaluating AMD cloud for batch inference workloads.",
-    "Research on federated learning. Testing AMD GPU compatibility with our federated framework.",
+    # ── LLM / NLP — specific & concrete ───────────────────────────────
+    "fine-tuning a 7B model on our internal docs, mostly checking if FSDP stays stable on ROCm across long runs",
+    "comparing vLLM throughput on MI300X vs H100 for a RAG service we ship next month",
+    "porting an in-house Triton kernel to HIP, looking for performance parity with our CUDA build",
+    "training a small language model for Vietnamese legal text, dataset is ~80GB and I keep running out of VRAM on my 4090",
+    "quantizing Llama 3.1 70B with AWQ, want to verify INT4 inference latency on MI300X before recommending it to the team",
+    "evaluating FlashAttention-2 backward on ROCm 6.2 for our 13B training run",
+    "building a multilingual embeddings pipeline for customer support search, eight languages, fine-tuning on domain data",
+    "trying to get llama.cpp to run a 70B Q4 on MI300X without falling over on context lengths past 8k",
+    "we hit a known bug with llama.cpp + ROCm 6.2 on MI250, would like to verify the fix on MI300X hardware",
+    "running continued pretraining of a 1.5B model on Indonesian news corpus, batch size keeps being the bottleneck",
+
+    # ── Vision / multimodal ────────────────────────────────────────────
+    "training a 3D pose estimation model for a gymnastics coaching app, mostly 6-8 hour jobs overnight",
+    "real-time semantic segmentation for a dashcam product, INT8 deployment, latency budget is 35ms",
+    "doing data augmentation for medical CT scans with MONAI, need the extra VRAM for full-resolution volumes",
+    "fine-tuning YOLOv9 on a custom industrial defect dataset, about 40k labeled images",
+    "open-vocabulary detection research, evaluating GroundingDINO on AMD because of cost",
+    "trying to port a diffusion-based image colorization model I wrote in PyTorch, getting weird results with bf16 on ROCm",
+    "video instance segmentation on surgical footage, ~4hr clips, batch size 1 but I need the memory headroom",
+
+    # ── Audio / speech ────────────────────────────────────────────────
+    "real-time speech recognition at 48kHz for a hearing aid prototype, on-device inference",
+    "training a U-Net for music source separation, mostly experimenting with different loss functions",
+    "running Whisper-large batch transcription across our podcast archive, ~50k hours",
+    "voice conversion model for a film dubbing project, needs to preserve prosody across languages",
+    "fine-tuning a VAD model for noisy factory floor recordings",
+
+    # ── Robotics / embodied AI ────────────────────────────────────────
+    "Isaac Sim sim-to-real for a warehouse picking robot, ~1000 parallel environments",
+    "drone flight controller RL pipeline, small policy nets but lots of parallel rollouts",
+    "ROS 2 navigation stack with semantic segmentation, currently testing edge inference on a custom carrier board",
+    "training a locomotion policy for a quadruped, curriculum learning over terrain difficulty",
+    "legged robot locomotion in MuJoCo, parallel env rollout bottleneck is currently GPU memory bandwidth",
+
+    # ── Scientific HPC ────────────────────────────────────────────────
+    "OpenFOAM simulations for a wind farm layout optimization, sweeping ~50 design parameters",
+    "GROMACS molecular dynamics for protein folding, 100ns trajectories take 2 weeks on our local cluster",
+    "FEniCS finite element analysis of cardiac blood flow, want to push mesh resolution up",
+    "NAMD simulations of ion channel permeation, currently memory-bandwidth bound",
+    "LAMMPS molecular dynamics for polymer crystallization studies, mostly equilibrations over days",
+    "computational fluid dynamics for an aerospace startup, mostly steady-state RANS",
+    "WRF weather model runs for regional climate research, need higher resolution grids",
+    "quantum chemistry calculations with PySCF, doing CASSCF on transition metal complexes",
+    "ANSYS Fluent on a parametric study of heat exchanger designs, 200+ variants",
+    "geophysical seismic inversion with Devito, full-waveform inversion on field data",
+    "lattice QCD calculations, my group needs more compute than what the department cluster provides",
+    "astrophysical N-body simulations for galaxy formation, particle counts in the billions",
+
+    # ── Graphics / rendering ──────────────────────────────────────────
+    "porting a Unity game to HIP for cross-platform rendering on AMD hardware",
+    "ray tracing benchmarks on RDNA 3 vs RTX 4090 for an indie game shipping Q2",
+    "Blender Cycles farm rendering for a freelance animation project, deadline-driven",
+    "evaluating Mesh shader support on AMD for a procedural terrain engine I'm writing",
+    "real-time path tracing demo for a graphics course I'm teaching",
+    "GPU video encoding pipeline using FFmpeg + Vulkan compute for a streaming service",
+
+    # ── Quant / Finance ───────────────────────────────────────────────
+    "Monte Carlo pricing of exotic options on a rates vol surface, ~10M paths per scenario",
+    "training a transformer-based alpha factor model for equity prediction",
+    "backtesting a market-making strategy with limit order book simulation at tick level",
+
+    # ── Crypto / Web3 ─────────────────────────────────────────────────
+    "zk-SNARK proof generation for a privacy L2, the proving step is the bottleneck",
+    "training a mev-search bot policy with PPO, mostly short rollouts",
+    "evaluating ROCm for accelerating BLS signature aggregation in a validator setup",
+
+    # ── Indie / side project / curious ────────────────────────────────
+    "trying to figure out if I can run Stable Diffusion XL locally on MI300X, no serious project, just curious",
+    "indie dev working on a small game, would like to do GPU lightmap baking without renting a beefy machine",
+    "personal project: training a music recommendation model on my own listening history",
+    "I make educational videos about ML, would like to actually run the demos I show on screen",
+    "weekend project: building a local voice assistant for my smart home, no cloud dependency",
+    "have a side project on protein structure prediction, only need compute occasionally so paying for a dedicated GPU doesn't make sense",
+
+    # ── Students / academia ───────────────────────────────────────────
+    "PhD student in computational biology, need occasional large GPU jobs for my dissertation chapter",
+    "doing a Kaggle competition, dataset is too big for my laptop's GPU",
+    "master's thesis on RL for resource allocation, my advisor suggested I try ROCm",
+    "undergraduate research assistant, mostly running small ablations but sometimes I need a bigger box",
+    "summer research project on graph neural networks for drug discovery, the lab's shared GPU is always full",
+    "preparing a benchmark paper for a workshop, need reproducible runs on multiple GPU vendors",
+
+    # ── Production engineering / migration ────────────────────────────
+    "our team is migrating from CUDA-only to ROCm for cost reasons, need to validate our inference stack on MI300X",
+    "evaluating AMD for a new recommendation service, current infra is all NVIDIA",
+    "productionizing a Triton model server, want to benchmark it on AMD before committing to the procurement",
+    "we serve a RAG API at ~5k QPS, looking at MI300X as a cost-effective alternative to H100",
+    "MLOps team, building CI/CD pipelines for model training, need a stable AMD environment to test against",
+    "data platform team, our dbt + Spark pipeline is getting expensive, looking at GPU-accelerated alternatives",
+    "running Stable Diffusion at scale for an e-commerce product photography pipeline",
+
+    # ── Specific questions to AMD ─────────────────────────────────────
+    "is there an ETA for FP4 support in upstream PyTorch on ROCm?",
+    "any guidance on NCCL-equivalent (RCCL) tuning for all-reduce across MI300X nodes?",
+    "what's the recommended way to profile kernel-level stalls on MI300X? rocprof or something else?",
+    "does ROCm 6.3 ship with pre-built wheels for JAX, or do I still need to compile from source?",
+    "any chance of getting the full ROCm profiler integrated with PyTorch profiler by default?",
+
+    # ── Genuinely casual / brief ──────────────────────────────────────
+    "just curious, want to try AMD before I commit to a workstation purchase",
+    "evaluating for future purchase, mostly reading docs and running small examples",
+    "I'm a CS student and would like to learn GPU programming outside of CUDA",
+    "doing a comparison for a blog post, no production workload, just want real numbers",
+    "small consultancy, sometimes we need GPU compute for client deliverables but not every day",
+    "want to see if my open-source library works on ROCm before claiming AMD support in the README",
+    "freelance ML engineer, my clients are starting to ask about AMD compatibility, need to keep up",
+    "I'm migrating off Google Colab because the free tier keeps timing out, looking for alternatives",
+    "saw your MI300X announcement, would like to put one through its paces for our internal tooling",
+    "writing a technical blog post comparing MI300X vs H100 for LLM inference, need access to real hardware",
+    "just want to try AMD because I keep hearing good things about ROCm lately",
+    "my team is small and we can't afford an H100 cluster, looking at AMD as a viable alternative",
+    "trying to decide between MI300X and H100 for a startup, the credit would help a lot",
+    "comparing cost-per-token across providers for a thesis chapter on inference economics",
 ]
 
 OUTCOMES = [
-    "Evaluate AMD GPU performance for training and inference workloads",
-    "Benchmark AMD ROCm against CUDA for our deep learning pipeline",
-    "Deploy production AI models on AMD cloud infrastructure",
-    "Test compatibility of our ML framework with AMD GPUs",
-    "Migrate AI workloads from NVIDIA to AMD ecosystem",
-    "Validate AMD GPU cloud for research computing needs",
+    "validate MI300X against H100 for our LLM inference workload",
+    "see if ROCm 6.x is stable enough for production training runs",
+    "measure end-to-end throughput on a real customer workload, not just microbenchmarks",
+    "get a sense of the MI300X memory bandwidth advantage for our embedding-heavy model",
+    "figure out if we can drop CUDA and ship HIP-only without losing customers",
+    "compare $/token across providers before our next infra renewal",
+    "find a stable ROCm build for our finetuning pipeline (we keep hitting edge cases)",
+    "verify that our custom kernels port cleanly before committing engineering time",
+    "see real numbers for FP8 training throughput on a non-NVIDIA stack",
+    "understand the actual software maturity gap — rumors vs reality",
+    "get a feel for multi-node scaling efficiency on MI300X",
+    "make a procurement recommendation to my team with data, not vibes",
+    "try AMD before we sign a 3-year H100 contract",
+    "decide if our indie game engine should officially support AMD GPUs",
+    "see if I can stop renting A100s for occasional training jobs",
+    "graduate from Colab Pro to something with more stability",
+    "write a fair comparison for our internal tech radar",
+    "get hardware access to finish my dissertation on time",
+    "ship a paper with reproducible numbers on both vendors",
+    "make a decision about AMD support in our open-source library",
+    "build confidence in ROCm before our team commits to the migration",
+    "test if the developer experience matches what AMD markets",
 ]
 
 
